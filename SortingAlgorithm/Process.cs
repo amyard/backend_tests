@@ -46,6 +46,13 @@ public class Process
     public async Task Sort(Stream source, Stream target, CancellationToken cancellationToken)
     {
         var files = await SplitFile(source, cancellationToken);
+        
+        // Here we create a new array that will hold the unsorted rows used in SortFiles.
+        // If we have more than 100 files, files will be unsorted.
+        _unsortedRows = new string[_maxUnsortedRows];
+        var sortedFiles = await SortFiles(files);
+
+        
         var asd = "aaaa";
     }
 
@@ -114,5 +121,40 @@ public class Process
 
             return filenames;
         }
+    }
+    
+    private async Task<IReadOnlyList<string>> SortFiles(IReadOnlyCollection<string> unsortedFiles)
+    {
+        var sortedFiles = new List<string>(unsortedFiles.Count);
+        double totalFiles = unsortedFiles.Count;
+        foreach (var unsortedFile in unsortedFiles)
+        {
+            var sortedFilename = unsortedFile.Replace(UnsortedFileExtension, SortedFileExtension);
+            var unsortedFilePath = Path.Combine(_options.FileLocation, unsortedFile);
+            var sortedFilePath = Path.Combine(_options.FileLocation, sortedFilename);
+            await SortFile(File.OpenRead(unsortedFilePath), File.OpenWrite(sortedFilePath));
+            File.Delete(unsortedFilePath);
+            sortedFiles.Add(sortedFilename);
+        }
+        return sortedFiles;
+    }
+
+    private async Task SortFile(Stream unsortedFile, Stream target)
+    {
+        using var streamReader = new StreamReader(unsortedFile, bufferSize: _options.Sort.InputBufferSize);
+        var counter = 0;
+        while (!streamReader.EndOfStream)
+        {
+            _unsortedRows[counter++] = (await streamReader.ReadLineAsync())!;
+        }
+
+        Array.Sort(_unsortedRows, _options.Sort.Comparer);
+        await using var streamWriter = new StreamWriter(target, bufferSize: _options.Sort.OutputBufferSize);
+        foreach (var row in _unsortedRows.Where(x => x != null))
+        {
+            await streamWriter.WriteLineAsync(row);
+        }
+
+        Array.Clear(_unsortedRows, 0, _unsortedRows.Length);
     }
 }
