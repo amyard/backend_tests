@@ -2,7 +2,6 @@
 
 public class Processing
 {
-    private long _maxUnsortedRows;
     private int fileSize = 1024 * 3;
     private char newLineSeparator = '\n';
     private readonly string _folderSplittedPath = @"D:\rider_projects\backend_tests\SplitLargeFile\splitedData";
