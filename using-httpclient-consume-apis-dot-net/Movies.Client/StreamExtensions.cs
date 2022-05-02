@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.IO;
+using System.Text;
 
 namespace Movies.Client
 {
@@ -20,6 +21,25 @@ namespace Movies.Client
                 {
                     var jsonSerializer = new JsonSerializer();
                     return jsonSerializer.Deserialize<T>(jsonTextReader);
+                }
+            }
+        }
+
+        public static void SerializeToJsonAndWriter<T>(this Stream stream, T objectToWrite)
+        {
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
+
+            if (!stream.CanWrite)
+                throw new NotSupportedException("Can't write to this stream.");
+
+            using (var streamWriter = new StreamWriter(stream, new UTF8Encoding(), 8291, true))
+            {
+                using (var jsonTextWriter = new JsonTextWriter(streamWriter))
+                {
+                    var jsonSerilizer = new JsonSerializer();
+                    jsonSerilizer.Serialize(jsonTextWriter, objectToWrite);
+                    jsonTextWriter.Flush();
                 }
             }
         }

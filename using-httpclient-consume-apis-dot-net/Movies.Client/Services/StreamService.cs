@@ -5,6 +5,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Text;
 using System.Threading.Tasks;
 
 namespace Movies.Client.Services
@@ -25,9 +26,10 @@ namespace Movies.Client.Services
         public async Task Run()
         {
             //await GetPosterWithStream();
-            await TestGetPosterWithoutStream();
-            await TestGetPosterWithStream();
-            await TestGetPosterWithStreamAndCompletionMode();
+            //await TestGetPosterWithoutStream();
+            //await TestGetPosterWithStream();
+            //await TestGetPosterWithStreamAndCompletionMode();
+            await PostPosterWithStream();
         }
 
         public async Task GetPosterWithoutStream()
@@ -120,5 +122,41 @@ namespace Movies.Client.Services
             Console.WriteLine($"GetPosterWithStreamAndCompletionMode: {stopWatch.ElapsedMilliseconds}. averaging - {stopWatch.ElapsedMilliseconds / 200} milliseconds/request.");
         }
         #endregion
+
+        private async Task PostPosterWithStream()
+        {
+            var random = new Random();
+            var generatedBytes = new byte[524288];
+            random.NextBytes(generatedBytes);
+
+            var posterForCreation = new PosterForCreation()
+            {
+                Name = "A new poster with Lebowski",
+                Bytes = generatedBytes
+            };
+
+            var memoryContentStream = new MemoryStream();
+            memoryContentStream.SerializeToJsonAndWriter(posterForCreation);
+
+            // set memory stream position to 0
+            memoryContentStream.Seek(0, SeekOrigin.Begin);
+
+            using (var request = new HttpRequestMessage(HttpMethod.Post, $"{_movieUrl}/d8663e5e-7494-4f81-8739-6e0de1bea7ee/posters"))
+            {
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(_jsonMediaType));
+
+                using (var streamContent = new StreamContent(memoryContentStream))
+                {
+                    streamContent.Headers.ContentType = new MediaTypeHeaderValue(_jsonMediaType);
+                    request.Content = streamContent;
+
+                    var response = await _httpClient.SendAsync(request);
+                    response.EnsureSuccessStatusCode();
+
+                    var createdContent = await response.Content.ReadAsStringAsync();
+                    var createdPoster = JsonConvert.DeserializeObject<Poster>(createdContent);
+                }
+            }
+        }
     }
 }
