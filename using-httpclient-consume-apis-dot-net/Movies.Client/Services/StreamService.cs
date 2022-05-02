@@ -29,7 +29,8 @@ namespace Movies.Client.Services
             //await TestGetPosterWithoutStream();
             //await TestGetPosterWithStream();
             //await TestGetPosterWithStreamAndCompletionMode();
-            await PostPosterWithStream();
+            //await PostPosterWithStream();
+            await PostAndReadPosterWithStream();
         }
 
         public async Task GetPosterWithoutStream()
@@ -155,6 +156,42 @@ namespace Movies.Client.Services
 
                     var createdContent = await response.Content.ReadAsStringAsync();
                     var createdPoster = JsonConvert.DeserializeObject<Poster>(createdContent);
+                }
+            }
+        }
+
+        private async Task PostAndReadPosterWithStream()
+        {
+            var random = new Random();
+            var generatedBytes = new byte[524288];
+            random.NextBytes(generatedBytes);
+
+            var posterForCreation = new PosterForCreation()
+            {
+                Name = "A new poster with Lebowski",
+                Bytes = generatedBytes
+            };
+
+            var memoryContentStream = new MemoryStream();
+            memoryContentStream.SerializeToJsonAndWriter(posterForCreation);
+
+            // set memory stream position to 0
+            memoryContentStream.Seek(0, SeekOrigin.Begin);
+
+            using (var request = new HttpRequestMessage(HttpMethod.Post, $"{_movieUrl}/d8663e5e-7494-4f81-8739-6e0de1bea7ee/posters"))
+            {
+                request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(_jsonMediaType));
+
+                using (var streamContent = new StreamContent(memoryContentStream))
+                {
+                    streamContent.Headers.ContentType = new MediaTypeHeaderValue(_jsonMediaType);
+                    request.Content = streamContent;
+
+                    var response = await _httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
+                    response.EnsureSuccessStatusCode();
+
+                    var stream = await response.Content.ReadAsStreamAsync();
+                    var poster = stream.ReadAndDeserializeFromJson<Poster>();
                 }
             }
         }
