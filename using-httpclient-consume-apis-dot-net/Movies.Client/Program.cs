@@ -52,12 +52,19 @@ namespace Movies.Client
         {
             // add loggers           
             serviceCollection.AddLogging(configure => configure.AddDebug().AddConsole());
-            serviceCollection.AddHttpClient("MovieClient", client =>
-            {
-                client.BaseAddress = new Uri("http://localhost:57863");
-                client.Timeout = new TimeSpan(0, 0, 30);
-                client.DefaultRequestHeaders.Clear();
-            }).ConfigurePrimaryHttpMessageHandler(handler =>
+            
+            serviceCollection
+                .AddHttpClient("MovieClient", client =>
+                {
+                    client.BaseAddress = new Uri("http://localhost:57863");
+                    client.Timeout = new TimeSpan(0, 0, 30);
+                    client.DefaultRequestHeaders.Clear();
+                })
+                // add timeout
+                .AddHttpMessageHandler(handler => new TimeOutDelegatingHandler(TimeSpan.FromSeconds(20)))
+                // add reply policy
+                .AddHttpMessageHandler(handler => new RetryPolicyDelegatingHandler(2))
+                .ConfigurePrimaryHttpMessageHandler(handler =>
                 new HttpClientHandler()
                 {
                     AutomaticDecompression = System.Net.DecompressionMethods.GZip
@@ -101,10 +108,10 @@ namespace Movies.Client
             // serviceCollection.AddScoped<IIntegrationService, HttpClientFactoryInstanceManagementService>();
 
             // For the dealing with errors and faults demos
-            serviceCollection.AddScoped<IIntegrationService, DealingWithErrorsAndFaultsService>();
+            // serviceCollection.AddScoped<IIntegrationService, DealingWithErrorsAndFaultsService>();
 
             // For the custom http handlers demos
-            // serviceCollection.AddScoped<IIntegrationService, HttpHandlersService>();     
+            serviceCollection.AddScoped<IIntegrationService, HttpHandlersService>();     
         }
     }
 }
