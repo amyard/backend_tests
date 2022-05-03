@@ -74,7 +74,9 @@ namespace Movies.Client
             //        AutomaticDecompression = System.Net.DecompressionMethods.GZip
             //    });
 
-            serviceCollection.AddHttpClient<MovieClient>().ConfigurePrimaryHttpMessageHandler(handler =>
+            serviceCollection
+                .AddHttpClient<MovieClient>()
+                .ConfigurePrimaryHttpMessageHandler(handler =>
                 new HttpClientHandler()
                 {
                     AutomaticDecompression = System.Net.DecompressionMethods.GZip
@@ -96,10 +98,10 @@ namespace Movies.Client
             // serviceCollection.AddScoped<IIntegrationService, CancellationService>();
 
             // For the HttpClientFactory demos
-            serviceCollection.AddScoped<IIntegrationService, HttpClientFactoryInstanceManagementService>();
+            // serviceCollection.AddScoped<IIntegrationService, HttpClientFactoryInstanceManagementService>();
 
             // For the dealing with errors and faults demos
-            // serviceCollection.AddScoped<IIntegrationService, DealingWithErrorsAndFaultsService>();
+            serviceCollection.AddScoped<IIntegrationService, DealingWithErrorsAndFaultsService>();
 
             // For the custom http handlers demos
             // serviceCollection.AddScoped<IIntegrationService, HttpHandlersService>();     

@@ -38,5 +38,28 @@ namespace Movies.Client
                 return stream.ReadAndDeserializeFromJson<List<Movie>>();
             }
         }
+
+        public async Task<IEnumerable<Movie>> GetMoviesFullCycle(CancellationToken token)
+        {
+            var request = new HttpRequestMessage(HttpMethod.Get, _movieUrl);
+            request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(_jsonMediaType));
+            request.Headers.AcceptEncoding.Add(new StringWithQualityHeaderValue("qzip"));
+
+            try
+            {
+                using (var response = await _client.SendAsync(request, HttpCompletionOption.ResponseHeadersRead, token))
+                {
+                    var stream = await response.Content.ReadAsStreamAsync();
+                    response.EnsureSuccessStatusCode();
+
+                    return stream.ReadAndDeserializeFromJson<List<Movie>>();
+                }
+            }
+            catch (OperationCanceledException ex)
+            {
+                Console.WriteLine($"An operation was cancelled with message: {ex.Message}");
+                throw;
+            }
+        }
     }
 }
