@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FolderPath.Migrations
 {
     [DbContext(typeof(DataContext))]
-    [Migration("20220812141825_InitialCreate")]
+    [Migration("20220812171542_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,10 +24,12 @@ namespace FolderPath.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Level")
-                        .HasColumnType("INTEGER");
+                    b.Property<int>("ParentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0);
 
-                    b.Property<string>("Name")
+                    b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("TEXT");
 

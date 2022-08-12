@@ -1,5 +1,6 @@
 using FolderPath.Data;
 using FolderPath.Models;
+using FolderPath.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -12,6 +13,8 @@ var builder = WebApplication.CreateBuilder(args);
     {
         options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection"));
     });
+
+    builder.Services.AddScoped<IFolderDirectoryService, FolderDirectoryService>();
 }
 
 var app = builder.Build();
@@ -57,14 +60,14 @@ async Task InsertStandardFolderStructureAsync(DataContext context)
     {
         List<FolderDirectory> data = new List<FolderDirectory>()
         {
-            new() {Name = "Creating Digital Images", Level = 1},
-            new() {Name = "Resources", Level = 2},
-            new() {Name = "Evidence", Level = 2},
-            new() {Name = "Graphic Products", Level = 2},
-            new() {Name = "Primary Sources", Level = 3},
-            new() {Name = "Secondary Sources", Level = 3},
-            new() {Name = "Process", Level = 3},
-            new() {Name = "Final Product", Level = 3}
+            new() {Title = "Creating Digital Images"},
+            new() {Title = "Resources", ParentId = 1}, // 2
+            new() {Title = "Evidence", ParentId = 1},
+            new() {Title = "Graphic Products", ParentId = 1}, // 4
+            new() {Title = "Primary Sources", ParentId = 2},
+            new() {Title = "Secondary Sources", ParentId = 2},
+            new() {Title = "Process", ParentId = 4},
+            new() {Title = "Final Product", ParentId = 4}
         };
 
         await context.FolderDirectories.AddRangeAsync(data);

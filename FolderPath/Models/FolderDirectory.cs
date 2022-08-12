@@ -1,14 +1,8 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace FolderPath.Models;
+﻿namespace FolderPath.Models;
 
 public class FolderDirectory
 {
     public int Id { get; set; }
-    
-    [Required]
-    public string Name { get; set; }
-    
-    [Required]
-    public int Level { get; set; }
+    public string Title { get; set; } = string.Empty;
+    public int ParentId { get; set; }
 }

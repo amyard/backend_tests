@@ -1,8 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
-using System.Reflection;
-using FolderPath.Models;
+﻿using FolderPath.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Internal;
 
 namespace FolderPath.Data;
 
@@ -16,7 +13,6 @@ public class DataContext : DbContext
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
-        //modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<FolderDirectory>()
@@ -24,11 +20,12 @@ public class DataContext : DbContext
             .ValueGeneratedOnAdd();
         
         modelBuilder.Entity<FolderDirectory>()
-            .Property(c => c.Name)
+            .Property(c => c.Title)
             .IsRequired();
         
         modelBuilder.Entity<FolderDirectory>()
-            .Property(c => c.Level)
+            .Property(c => c.ParentId)
+            .HasDefaultValue(0)
             .IsRequired();
     }
 }

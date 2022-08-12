@@ -14,8 +14,8 @@ namespace FolderPath.Migrations
                 {
                     Id = table.Column<int>(type: "INTEGER", nullable: false)
                         .Annotation("Sqlite:Autoincrement", true),
-                    Name = table.Column<string>(type: "TEXT", nullable: false),
-                    Level = table.Column<int>(type: "INTEGER", nullable: false)
+                    Title = table.Column<string>(type: "TEXT", nullable: false),
+                    ParentId = table.Column<int>(type: "INTEGER", nullable: false, defaultValue: 0)
                 },
                 constraints: table =>
                 {

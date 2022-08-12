@@ -22,10 +22,12 @@ namespace FolderPath.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("INTEGER");
 
-                    b.Property<int>("Level")
-                        .HasColumnType("INTEGER");
+                    b.Property<int>("ParentId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(0);
 
-                    b.Property<string>("Name")
+                    b.Property<string>("Title")
                         .IsRequired()
                         .HasColumnType("TEXT");
 
