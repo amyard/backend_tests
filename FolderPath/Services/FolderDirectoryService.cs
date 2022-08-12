@@ -21,31 +21,39 @@ public class FolderDirectoryService : IFolderDirectoryService
     public async Task<List<FolderDirectory>> GetFolderDirectoriesAsync(string path)
     {
         bool rootFolder = string.IsNullOrWhiteSpace(path);
-        string[] splitArray = !rootFolder ? path.Split("/") : Array.Empty<string>();
-        string slug = splitArray.Length > 0 ? splitArray[^1] : string.Empty;
-        
-        var query = _context.FolderDirectories.AsQueryable();
 
-        query = rootFolder
-            ? query.Where(x => x.ParentId == 0)
-            : query.Where(x => x.Title.ToLower() == slug.ToLower());
-
-        var subResult = await query.ToListAsync();
-        
+        // ONLY FOR ROOT FOLDERS
         if (rootFolder) 
-            return subResult;
+        {
+            return await _context.FolderDirectories
+                .Where(x => x.ParentId == 0)
+                .ToListAsync();
+        }
         
-        // if asd.Count > 1
-        // need to find correct path
-        // also check for full path ---> each sub path must be here
+        // need to iterate through each node to ensure all sub-nodes are correct
+        // to avoid some wrong nodes in url by typing it manually
+        int parentId = 0;
+        List<FolderDirectory> result = new List<FolderDirectory>();
+        string[] splitArray = path.Split("/");
+        
+        var directoryEntities = await _context.FolderDirectories
+            .Where(x => splitArray.Contains(x.Title))
+            .ToListAsync();
 
-        var result2 = _context.FolderDirectories
-            .ToLookup(x => x.ParentId)
-            .ToList();
+        if (directoryEntities.Count < splitArray.Length)
+            return result;
+
+        foreach (var urlSubItem in splitArray)
+        {
+            var item = directoryEntities.FirstOrDefault(x => x.Title.ToLower() == urlSubItem.ToLower());
+
+            if (item is null) return result;
+            parentId = item.Id;
+        }
         
-        var result = _context.FolderDirectories
+        result = _context.FolderDirectories
             .ToLookup(x => x.ParentId)
-            .Where(x => x.Key == subResult.FirstOrDefault()?.Id)
+            .Where(x => x.Key == parentId)
             .SelectMany(x => x)
             .ToList();
 

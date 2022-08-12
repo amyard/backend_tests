@@ -435,4 +435,6 @@ $RECYCLE.BIN/
 
 # custom
 structure.db
+structure.db-shm
+structure.db-wal
 structure.*

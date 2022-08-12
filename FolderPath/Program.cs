@@ -15,6 +15,8 @@ var builder = WebApplication.CreateBuilder(args);
     });
 
     builder.Services.AddScoped<IFolderDirectoryService, FolderDirectoryService>();
+    
+    builder.Services.AddMvc().AddRazorRuntimeCompilation();
 }
 
 var app = builder.Build();
