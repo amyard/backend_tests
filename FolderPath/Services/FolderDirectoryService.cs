@@ -1,5 +1,9 @@
-﻿using FolderPath.Data;
+﻿using System.Globalization;
+using CsvHelper;
+using CsvHelper.Configuration;
+using FolderPath.Data;
 using FolderPath.Models;
+using FolderPath.Models.CsvMapping;
 using Microsoft.EntityFrameworkCore;
 
 namespace FolderPath.Services;
@@ -7,6 +11,7 @@ namespace FolderPath.Services;
 public interface IFolderDirectoryService
 {
     Task<List<FolderDirectory>> GetFolderDirectoriesAsync(string path);
+    Task ExportAsync(string fileName);
 }
 
 public class FolderDirectoryService : IFolderDirectoryService
@@ -61,5 +66,25 @@ public class FolderDirectoryService : IFolderDirectoryService
             .ToList();
 
         return result;
+    }
+
+    public async Task ExportAsync(string fileName)
+    {
+        CsvConfiguration _csvOptions = new CsvConfiguration(CultureInfo.InvariantCulture)
+        {
+            HasHeaderRecord = true,
+            Delimiter = ";"
+        };
+
+        List<FolderDirectory> data = await _context.FolderDirectories.ToListAsync();
+
+        await using var writer = new StreamWriter(fileName);
+        await using var csvWriter = new CsvWriter(writer, _csvOptions);
+        
+        csvWriter.Context.RegisterClassMap<FolderDirectoryClassMap>();
+        //csvWriter.WriteHeader<FolderDirectory>();
+        
+        await csvWriter.WriteRecordsAsync(data);
+        await writer.FlushAsync();
     }
 }

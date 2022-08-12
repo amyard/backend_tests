@@ -12,4 +12,26 @@
         var url = specSign + Model.PathUrl.Replace(item.Title, "") + specSign + item.Title;
         <a href="@(url)">@(item.Title)</a><br>
     }
+    
+    <hr>
+    <button type="button" onclick="exportAsync()">Export All</button>
+    <button type="button" onclick="Import()">Import</button>
 </div>
+
+<script>
+    function exportAsync() {
+        $.ajax({
+            type : "GET",
+            url : "export-async",
+            success: function (r){
+                alert(r.message);
+            },
+            error: function (r) {
+                console.log("error ", r);
+            },
+            failure: function () {
+                console.log("failure")
+            }
+        });
+    }
+</script>

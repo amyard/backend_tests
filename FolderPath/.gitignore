@@ -438,3 +438,4 @@ structure.db
 structure.db-shm
 structure.db-wal
 structure.*
+*.csv

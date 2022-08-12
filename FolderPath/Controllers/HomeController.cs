@@ -8,14 +8,20 @@ namespace FolderPath.Controllers;
 public class HomeController : Controller
 {
     private readonly ILogger<HomeController> _logger;
+    private readonly IFolderDirectoryService _folderDirectoryService;
+    private readonly IConfiguration _config;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(
+        ILogger<HomeController> logger, 
+        IFolderDirectoryService folderDirectoryService,
+        IConfiguration config)
     {
         _logger = logger;
+        _folderDirectoryService = folderDirectoryService;
+        _config = config;
     }
     
-    public async Task<IActionResult> Index(string? path, 
-        [FromServices] IFolderDirectoryService _folderDirectoryService)
+    public async Task<IActionResult> Index(string? path)
     {
         try
         {
@@ -35,6 +41,27 @@ public class HomeController : Controller
             Console.WriteLine(e);
             throw;
         }
+    }
+
+    [HttpGet]
+    [Route("export-async")]
+    public async Task<ActionResult> ExportAsync()
+    {
+        string message; 
+        
+        try
+        {
+            string fileName = _config.GetValue<string>("ExportFile") ?? "export2.csv";
+            await _folderDirectoryService.ExportAsync(fileName);
+            
+            message = $"File was generated in root - {fileName}";
+        }
+        catch (Exception ex)
+        {
+            message = $"Some error occured.{Environment.NewLine}{ex.Message}";
+        }
+
+        return Json(new {message = message});
     }
 
     private string ValidatePathText(string validatedPath)
