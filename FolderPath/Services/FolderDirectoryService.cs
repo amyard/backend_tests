@@ -20,15 +20,15 @@ public class FolderDirectoryService : IFolderDirectoryService
     
     public async Task<List<FolderDirectory>> GetFolderDirectoriesAsync(string path)
     {
-        bool rootFolder = string.IsNullOrWhiteSpace(path);
-
-        // ONLY FOR ROOT FOLDERS
-        if (rootFolder) 
-        {
-            return await _context.FolderDirectories
-                .Where(x => x.ParentId == 0)
-                .ToListAsync();
-        }
+        // bool rootFolder = string.IsNullOrWhiteSpace(path);
+        //
+        // // ONLY FOR ROOT FOLDERS
+        // if (rootFolder) 
+        // {
+        //     return await _context.FolderDirectories
+        //         .Where(x => x.ParentId == 0)
+        //         .ToListAsync();
+        // }
         
         // need to iterate through each node to ensure all sub-nodes are correct
         // to avoid some wrong nodes in url by typing it manually
@@ -36,19 +36,22 @@ public class FolderDirectoryService : IFolderDirectoryService
         List<FolderDirectory> result = new List<FolderDirectory>();
         string[] splitArray = path.Split("/");
         
-        var directoryEntities = await _context.FolderDirectories
-            .Where(x => splitArray.Contains(x.Title))
-            .ToListAsync();
-
-        if (directoryEntities.Count < splitArray.Length)
-            return result;
-
-        foreach (var urlSubItem in splitArray)
+        if(!string.IsNullOrWhiteSpace(path))
         {
-            var item = directoryEntities.FirstOrDefault(x => x.Title.ToLower() == urlSubItem.ToLower());
+            var directoryEntities = await _context.FolderDirectories
+                .Where(x => splitArray.Contains(x.Title))
+                .ToListAsync();
 
-            if (item is null) return result;
-            parentId = item.Id;
+            if (directoryEntities.Count < splitArray.Length)
+                return result;
+
+            foreach (var urlSubItem in splitArray)
+            {
+                var item = directoryEntities.FirstOrDefault(x => x.Title.ToLower() == urlSubItem.ToLower());
+
+                if (item is null) return result;
+                parentId = item.Id;
+            }
         }
         
         result = _context.FolderDirectories
