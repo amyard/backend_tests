@@ -12,10 +12,20 @@ public interface IFolderDirectoryService
 {
     Task<List<FolderDirectory>> GetFolderDirectoriesAsync(string path);
     Task ExportAsync(string fileName);
+    Task UploadAsync(IFormFile file);
+    Task DeleteAllDataAsync();
+    Task InsertAsync(List<FolderDirectory> data);
 }
 
 public class FolderDirectoryService : IFolderDirectoryService
 {
+    private readonly CsvConfiguration _csvOptions = new CsvConfiguration(CultureInfo.InvariantCulture)
+    {
+        HasHeaderRecord = true,
+        Delimiter = ";",
+        MissingFieldFound = null
+    };
+    
     private readonly DataContext _context;
 
     public FolderDirectoryService(DataContext context)
@@ -70,21 +80,50 @@ public class FolderDirectoryService : IFolderDirectoryService
 
     public async Task ExportAsync(string fileName)
     {
-        CsvConfiguration _csvOptions = new CsvConfiguration(CultureInfo.InvariantCulture)
-        {
-            HasHeaderRecord = true,
-            Delimiter = ";"
-        };
-
         List<FolderDirectory> data = await _context.FolderDirectories.ToListAsync();
 
         await using var writer = new StreamWriter(fileName);
         await using var csvWriter = new CsvWriter(writer, _csvOptions);
         
         csvWriter.Context.RegisterClassMap<FolderDirectoryClassMap>();
-        //csvWriter.WriteHeader<FolderDirectory>();
         
         await csvWriter.WriteRecordsAsync(data);
         await writer.FlushAsync();
+    }
+
+    public async Task UploadAsync(IFormFile file)
+    {  
+        using (var stream = new MemoryStream())
+        {
+            await file.CopyToAsync(stream);
+            stream.Seek(0, SeekOrigin.Begin);
+
+            using (var reader = new StreamReader(stream))
+            using (var csvReader = new CsvReader(reader, _csvOptions))
+            {
+                csvReader.Context.RegisterClassMap<FolderDirectoryClassMap>();
+                
+                var records = csvReader.GetRecords<FolderDirectory>().ToList();
+
+                if (records.Any())
+                {
+                    await DeleteAllDataAsync();
+                    await InsertAsync(records);
+                }
+            }
+        }
+    }
+
+    public async Task DeleteAllDataAsync()
+    {
+        var data = await _context.FolderDirectories.ToListAsync();
+        _context.FolderDirectories.RemoveRange(data);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task InsertAsync(List<FolderDirectory> data)
+    {
+        await _context.FolderDirectories.AddRangeAsync(data);
+        await _context.SaveChangesAsync();
     }
 }

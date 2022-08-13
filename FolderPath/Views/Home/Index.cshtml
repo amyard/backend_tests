@@ -15,7 +15,19 @@
     
     <hr>
     <button type="button" onclick="exportAsync()">Export All</button>
-    <button type="button" onclick="Import()">Import</button>
+    <hr>
+    
+    <form action="upload-async" enctype="multipart/form-data" method="post">
+        <dl>
+            <dd style="margin: 0;">
+                <input type="file" id="file" name="file" />
+            </dd>
+        </dl>
+    
+        <input id="upload-file" class="btn" type="button" value="Upload" />
+    </form>
+
+    
 </div>
 
 <script>
@@ -34,4 +46,36 @@
             }
         });
     }
+    
+    $("#upload-file").on("click", function() {
+        event.preventDefault();
+        
+        var formData = new FormData();
+        var files = $('#file')[0].files;
+        
+        // Check file selected or not
+        if(files.length > 0 ){
+           formData.append('file',files[0]);
+    
+            console.log("file  ", file);
+            console.log("formData  ", formData);
+        
+            $.ajax({
+                type : "POST",
+                url : "upload-async",
+                data: formData,
+                contentType: false,
+                processData: false,
+                success: function (r){
+                    alert(r.message);
+                },
+                error: function (r) {
+                    console.log("error ", r);
+                },
+                failure: function () {
+                    console.log("failure")
+                }
+            });
+        }
+    });
 </script>

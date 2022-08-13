@@ -63,6 +63,30 @@ public class HomeController : Controller
 
         return Json(new {message = message});
     }
+    
+    [HttpPost]
+    [Route("upload-async")]
+    public async Task<ActionResult> UploadAsync(IFormFile uploadedFile)
+    {
+        string message = String.Empty;
+        try
+        {
+            IFormFile file = Request.Form.Files[0];
+            
+            if(file.Length == 0)
+                return Json(new {message = "There were any files in response"});
+
+            await _folderDirectoryService.UploadAsync(file);
+            message = "file was uploaded.";
+
+        }
+        catch(Exception ex)
+        {
+            return Json(new {message = $"Some error occured.{Environment.NewLine}{ex.Message}"});
+        }
+        
+        return Json(new {message = message});
+    }
 
     private string ValidatePathText(string validatedPath)
     {
