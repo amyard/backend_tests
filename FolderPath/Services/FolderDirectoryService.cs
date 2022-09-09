@@ -62,7 +62,8 @@ public class FolderDirectoryService : IFolderDirectoryService
 
             foreach (var urlSubItem in splitArray)
             {
-                var item = directoryEntities.FirstOrDefault(x => x.Title.ToLower() == urlSubItem.ToLower());
+                var item = directoryEntities.FirstOrDefault(x => x.Title.ToLower() == urlSubItem.ToLower() &&
+                                                                 x.ParentId == parentId);
 
                 if (item is null) return result;
                 parentId = item.Id;

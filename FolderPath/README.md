@@ -12,3 +12,6 @@ dotnet ef database update
 https://www.mongodb.com/docs/manual/tutorial/model-tree-structures-with-materialized-paths/   
 
 https://habr.com/ru/post/354694/
+
+-- for import / export csv   
+CsvHelper
