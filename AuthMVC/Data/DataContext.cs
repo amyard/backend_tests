@@ -11,6 +11,8 @@ public class DataContext : DbContext
     
     public DbSet<Profile> Profiles { get; set; }
     public DbSet<FriendShip> FriendShips { get; set; }
+    
+    // public DbSet<UserProfile> UserProfiles { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -34,5 +36,20 @@ public class DataContext : DbContext
             .WithMany(f => f.FriendsOf)
             .HasForeignKey(x => x.FriendProfileId)
             .OnDelete(DeleteBehavior.Cascade);
+        
+        // user tests
+        // modelBuilder.Entity<User>()
+        //     .Property(x => x.Id)
+        //     .ValueGeneratedOnAdd();
+        
+        // modelBuilder.Entity<UserProfile>()
+        //     .HasMany(u => u.Friends)
+        //     .WithMany(u => u.FriendOf)
+        //     .Map(m => m.ToTable("UserFriends")
+        //         .MapLeftKey("UserId")
+        //         .MapRightKey("FriendId"));
+        
+        // https://stackoverflow.com/questions/51810776/entity-framework-many-to-many-on-same-table
+        // https://www.entityframeworktutorial.net/code-first/configure-entity-mappings-using-fluent-api.aspx
     }
 }
